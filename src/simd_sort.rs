@@ -164,9 +164,7 @@ unsafe fn merge_sorted_halves_8(data: &mut [f64]) {
     
     for i in 0..8 {
         if data[i] > second[i] {
-            let tmp = data[i];
-            data[i] = second[i];
-            second[i] = tmp;
+            std::mem::swap(&mut data[i], &mut second[i]);
         }
     }
     data[8..16].copy_from_slice(&second);

@@ -41,18 +41,14 @@ pub fn parallel_partition(data: &[f64], rmi: &MonotonicRMI) -> PartitionedData {
     global_offsets[num_buckets] = n;
 
     // Pass 2: Parallel scatter
-    let mut output: Vec<f64> = Vec::with_capacity(n);
-    unsafe { output.set_len(n); }
+    let mut output: Vec<f64> = vec![0.0f64; n];
     let out_ptr = output.as_mut_ptr() as usize;
 
     data.par_chunks(chunk_size)
         .enumerate()
         .for_each(|(c_idx, chunk)| {
             let base = c_idx * num_buckets;
-            let mut offsets = vec![0usize; num_buckets];
-            for b in 0..num_buckets {
-                offsets[b] = thread_starts[base + b];
-            }
+            let mut offsets = thread_starts[base..(base + num_buckets)].to_vec();
 
             let ptr = out_ptr as *mut f64;
             for &x in chunk {

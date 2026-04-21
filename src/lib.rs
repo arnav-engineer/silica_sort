@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 mod external_sort;
 mod hardware;
 mod interface;
-mod learned_sort;
+pub mod learned_sort;
 mod partition;
 mod radix_sort;
 mod rmi;

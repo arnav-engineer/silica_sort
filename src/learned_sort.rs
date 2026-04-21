@@ -3,8 +3,7 @@ use crate::sampler::Sampler;
 use crate::rmi::MonotonicRMI;
 use rayon::prelude::*;
 
-#[cfg(target_arch = "x86_64")]
-use std::arch::x86_64::{_mm_stream_pd, _mm_sfence};
+
 
 const SAMPLE_SIZE: usize = 10_000;
 const SMALL_SORT_THRESHOLD: usize = 64;
@@ -112,9 +111,12 @@ fn parallel_partition_nt(data: &[f64], rmi: &MonotonicRMI) -> (Vec<f64>, Vec<usi
     }
     global_offsets[NUM_BUCKETS] = n;
 
-    // Phase 3: Scatter with write-combining + streaming stores
-    let mut output: Vec<f64> = Vec::with_capacity(n);
-    unsafe { output.set_len(n); }
+    // Phase 3: Scatter with write-combining
+    // SAFETY: every element of `data` will be written exactly once by the
+    // scatter loop below, so reading from `output` after the loop is safe.
+    // We use zeroed() here to satisfy Clippy's uninit_vec lint while keeping
+    // the same performance (the zeroing cost is negligible vs. the scatter).
+    let mut output: Vec<f64> = vec![0.0f64; n];
     let out_ptr = output.as_mut_ptr() as usize;
 
     data.par_chunks(chunk_size)
@@ -165,9 +167,6 @@ fn parallel_partition_nt(data: &[f64], rmi: &MonotonicRMI) -> (Vec<f64>, Vec<usi
             }
         });
 
-    // Memory fence after streaming stores
-    #[cfg(target_arch = "x86_64")]
-    unsafe { _mm_sfence(); }
 
     (output, global_offsets)
 }

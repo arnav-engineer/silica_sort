@@ -78,8 +78,7 @@ pub fn read_f64_chunk(file: &mut File, max_elements: usize) -> Result<Vec<f64>, 
         return Ok(Vec::new());
     }
 
-    let mut data = Vec::<f64>::with_capacity(max_elements);
-    unsafe { data.set_len(max_elements) };
+    let mut data = vec![0.0f64; max_elements];
 
     let buffer = unsafe {
         std::slice::from_raw_parts_mut(

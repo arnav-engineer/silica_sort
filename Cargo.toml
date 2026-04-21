@@ -5,7 +5,7 @@ edition = "2021"
 
 [lib]
 name = "_silica_sort"
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 pyo3 = { version = "0.20.0", features = ["extension-module"] }

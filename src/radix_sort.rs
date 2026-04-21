@@ -48,8 +48,7 @@ pub fn sort_f64_in_place(data: &mut [f64]) {
     let keys = f64_as_u64_mut(data);
     transform_keys(keys);
 
-    let mut scratch: Vec<u64> = Vec::with_capacity(n);
-    unsafe { scratch.set_len(n); }
+    let mut scratch: Vec<u64> = vec![0u64; n];
 
     if n >= PARALLEL_THRESHOLD {
         radix_sort_parallel(keys, &mut scratch);
@@ -111,13 +110,13 @@ fn radix_sort_sequential(keys: &mut [u64], scratch: &mut [u64]) {
     let mut dst = scratch_ptr;
     let mut in_keys = true;
 
-    for pass in 0..NUM_PASSES {
-        if is_single_bucket(&histograms[pass]) {
+    for (pass, hist_pass) in histograms.iter().enumerate() {
+        if is_single_bucket(hist_pass) {
             continue;
         }
 
         let mut offsets = [0usize; RADIX_SIZE];
-        prefix_sum(&histograms[pass], &mut offsets);
+        prefix_sum(hist_pass, &mut offsets);
 
         let source = unsafe { std::slice::from_raw_parts(src, n) };
         for &value in source {
@@ -190,8 +189,8 @@ fn radix_sort_parallel(keys: &mut [u64], scratch: &mut [u64]) {
         prefix_sum(&global, &mut global_offsets);
 
         let mut thread_offsets = vec![0usize; num_chunks * RADIX_SIZE];
-        for b in 0..RADIX_SIZE {
-            let mut off = global_offsets[b];
+        for (b, &g_off) in global_offsets.iter().enumerate() {
+            let mut off = g_off;
             for c in 0..num_chunks {
                 let slot = c * RADIX_SIZE + b;
                 thread_offsets[slot] = off;
@@ -243,14 +242,11 @@ fn radix_sort_parallel(keys: &mut [u64], scratch: &mut [u64]) {
                 }
 
                 // Flush remaining buffered elements
-                for d in 0..RADIX_SIZE {
-                    let cnt = buf_counts[d] as usize;
+                for (d, (&cnt, &off)) in buf_counts.iter().zip(offsets.iter()).enumerate() {
+                    let cnt = cnt as usize;
                     if cnt > 0 {
-                        let off = offsets[d];
                         for i in 0..cnt {
-                            unsafe {
-                                *ptr.add(off + i) = buffers[d][i];
-                            }
+                            unsafe { *ptr.add(off + i) = buffers[d][i]; }
                         }
                     }
                 }
@@ -328,36 +324,56 @@ pub fn try_counting_sort(data: &mut [f64], max_unique: usize) -> bool {
 
     let k = unique_bits.len();
 
-    // Full scan to count — use direct index matching for speed.
-    // For k <= 16, unrolled linear search is fastest.
-    let mut counts = vec![0usize; k];
-    for &val in data.iter() {
-        let bits = val.to_bits();
-        let mut found = false;
-        for j in 0..k {
-            if unique_bits[j] == bits {
-                counts[j] += 1;
-                found = true;
-                break;
+    // Parallel scan to count — use chunks to minimize overhead.
+    // If an unknown element is found, we return None to abort.
+    use rayon::prelude::*;
+    let counts_opt = data.par_chunks(8192)
+        .map(|chunk| {
+            let mut local_counts = vec![0usize; k];
+            for &val in chunk {
+                let bits = val.to_bits();
+                let mut found = false;
+                for j in 0..k {
+                    if unique_bits[j] == bits {
+                        local_counts[j] += 1;
+                        found = true;
+                        break;
+                    }
+                }
+                if !found {
+                    return None;
+                }
             }
-        }
-        if !found {
-            return false;
-        }
-    }
+            Some(local_counts)
+        })
+        .reduce(|| Some(vec![0usize; k]), |a_opt, b_opt| {
+            match (a_opt, b_opt) {
+                (Some(mut a), Some(b)) => {
+                    for i in 0..k {
+                        a[i] += b[i];
+                    }
+                    Some(a)
+                }
+                _ => None
+            }
+        });
 
-    // Sort unique values by sort key
-    let mut indexed: Vec<(u64, usize)> = unique_bits.iter().copied().zip(counts).collect();
-    indexed.sort_unstable_by_key(|&(bits, _)| f64_bits_to_key(bits));
+    if let Some(counts) = counts_opt {
+        // Sort unique values by sort key
+        let mut indexed: Vec<(u64, usize)> = unique_bits.iter().copied().zip(counts).collect();
+        indexed.sort_unstable_by_key(|&(bits, _)| f64_bits_to_key(bits));
 
-    // Fill result
-    let mut offset = 0;
-    for (bits, count) in indexed {
-        let val = f64::from_bits(bits);
-        data[offset..offset + count].fill(val);
-        offset += count;
+        // Fill result
+        let mut offset = 0;
+        for (bits, count) in indexed {
+            let val = f64::from_bits(bits);
+            data[offset..offset + count].fill(val);
+            offset += count;
+        }
+        true
+    } else {
+        false
     }
-    true
 }
 
 #[cfg(test)]
