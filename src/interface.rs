@@ -57,6 +57,28 @@ pub fn sort_numpy_inplace<'py>(
     Ok(())
 }
 
+/// Sort a NumPy array in place using Rust's standard sort_unstable_by.
+#[pyfunction]
+pub fn sort_numpy_rust_standard<'py>(
+    py: Python<'py>,
+    mut array: PyReadwriteArrayDyn<'py, f64>,
+) -> PyResult<()> {
+    let mut array = array.as_array_mut();
+    let raw_slice = array.as_slice_mut().ok_or_else(|| {
+        PyErr::new::<pyo3::exceptions::PyValueError, _>("Non-contiguous array not supported")
+    })?;
+    
+    let addr = raw_slice.as_mut_ptr() as usize;
+    let len = raw_slice.len();
+    
+    py.allow_threads(move || {
+        let slice = unsafe { std::slice::from_raw_parts_mut(addr as *mut f64, len) };
+        slice.sort_by(|a, b| a.total_cmp(b));
+    });
+    
+    Ok(())
+}
+
 /// Sort a file of f64s externally.
 #[pyfunction]
 pub fn sort_file(_py: Python<'_>, input_path: String, output_path: String) -> PyResult<()> {

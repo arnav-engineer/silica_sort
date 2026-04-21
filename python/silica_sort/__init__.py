@@ -8,6 +8,7 @@ from ._silica_sort import (
     sort_file as _sort_file,
     sort_numpy as _sort_numpy,
     sort_numpy_inplace as _sort_numpy_inplace,
+    sort_numpy_rust_standard as _sort_numpy_rust_standard,
     test_rmi as _test_rmi,
 )
 
@@ -26,6 +27,12 @@ def sort_numpy_inplace(array: NDArray[np.float64]) -> None:
     Uses the high-performance Learned Sort hybrid algorithm.
     """
     _sort_numpy_inplace(array)
+
+def sort_numpy_rust_standard(array: NDArray[np.float64]) -> None:
+    """
+    Sorts a contiguous 1D NumPy array of 64-bit floats in place using Rust's standard library.
+    """
+    _sort_numpy_rust_standard(array)
 
 def sort_file(input_path: str, output_path: str) -> None:
     """
@@ -52,6 +59,7 @@ __all__ = [
     "__version__",
     "sort_numpy",
     "sort_numpy_inplace",
+    "sort_numpy_rust_standard",
     "sort_file",
     "get_system_info",
     "test_rmi",
