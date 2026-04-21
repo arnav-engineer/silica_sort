@@ -91,33 +91,70 @@ pub fn sort_file(_py: Python<'_>, input_path: String, output_path: String) -> Py
 
     let chunk_size = recommended_external_chunk_size(n);
 
-    let mut run_paths = Vec::new();
-    loop {
-        let chunk = read_f64_chunk(&mut input_file, chunk_size)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string()))?;
-        if chunk.is_empty() {
-            break;
+    // Release the GIL during the long-running external sort
+    let merge_result = _py.allow_threads(move || -> Result<(), String> {
+        let (read_tx, read_rx) = std::sync::mpsc::sync_channel::<Vec<f64>>(2);
+        let (write_tx, write_rx) = std::sync::mpsc::sync_channel::<Vec<f64>>(2);
+
+        // 1. Reader Thread
+        let reader_thread = std::thread::spawn(move || -> Result<(), String> {
+            loop {
+                let chunk = read_f64_chunk(&mut input_file, chunk_size)
+                    .map_err(|e| e.to_string())?;
+                if chunk.is_empty() {
+                    break;
+                }
+                if read_tx.send(chunk).is_err() {
+                    break; // Receiver disconnected
+                }
+            }
+            Ok(())
+        });
+
+        // 2. Sorter Thread
+        let sorter_thread = std::thread::spawn(move || {
+            while let Ok(mut chunk) = read_rx.recv() {
+                learned_sort::learned_sort_f64(&mut chunk);
+                if write_tx.send(chunk).is_err() {
+                    break; // Receiver disconnected
+                }
+            }
+        });
+
+        // 3. Writer Thread (Main thread handles writing to avoid spawning unnecessary threads)
+        let mut run_paths = Vec::new();
+        let mut write_err = None;
+        while let Ok(sorted_chunk) = write_rx.recv() {
+            let run_path = format!("{}.run.{}", input_path, run_paths.len());
+            if let Err(e) = write_f64_file(&run_path, &sorted_chunk) {
+                write_err = Some(e.to_string());
+                break;
+            }
+            run_paths.push(PathBuf::from(run_path));
         }
 
-        let mut sorted_chunk = chunk;
-        learned_sort::learned_sort_f64(&mut sorted_chunk);
+        // Synchronize and check for errors in the pipeline
+        let reader_res = reader_thread.join().unwrap_or_else(|_| Err("Reader thread panicked".into()));
+        sorter_thread.join().unwrap_or_else(|_| ());
 
-        let run_path = format!("{}.run.{}", input_path, run_paths.len());
-        write_f64_file(&run_path, &sorted_chunk)
-            .map_err(|e| PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string()))?;
+        if let Some(e) = write_err {
+            return Err(e);
+        }
+        reader_res?;
 
-        run_paths.push(PathBuf::from(run_path));
-    }
+        // 4. K-Way Merge
+        let merge_res = crate::external_sort::k_way_merge(&run_paths, &output_path, n)
+            .map_err(|e| e.to_string());
 
-    let merge_result = crate::external_sort::k_way_merge(&run_paths, &output_path, n)
-        .map_err(|e| PyErr::new::<pyo3::exceptions::PyIOError, _>(e.to_string()));
+        // Cleanup temporary runs
+        for path in &run_paths {
+            let _ = std::fs::remove_file(path);
+        }
 
-    // Cleanup temporary runs
-    for path in &run_paths {
-        let _ = std::fs::remove_file(path);
-    }
+        merge_res
+    });
 
-    merge_result
+    merge_result.map_err(|e| PyErr::new::<pyo3::exceptions::PyIOError, _>(e))
 }
 
 /// Get system hardware information properly detected by Rust
