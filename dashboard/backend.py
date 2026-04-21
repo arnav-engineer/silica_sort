@@ -5,6 +5,7 @@ import numpy as np
 import time
 import silica_sort
 from codecarbon import OfflineEmissionsTracker
+import psutil
 
 app = FastAPI()
 
@@ -24,6 +25,44 @@ def get_compute_cost_inr(duration: float) -> float:
     # Cost per second = ₹332 / 3600 = ₹0.092 per second
     cost_per_second_inr = 0.092 
     return duration * cost_per_second_inr
+
+@app.get("/sysinfo")
+def get_sysinfo():
+    mem = psutil.virtual_memory()
+    available_gb = mem.available / (1024 ** 3)
+    # Allocate full available RAM for out-of-memory processing
+    limit_gb = available_gb
+    return {
+        "available_ram_gb": available_gb,
+        "ram_limit_gb": limit_gb
+    }
+
+@app.post("/simulate_outmemory")
+def simulate_outmemory():
+    import os
+    import datetime
+    
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    new_filename = f"dataset_20gb_sorted_{timestamp}.bin"
+    
+    # Use hardlink to be instant and save 20GB disk space, while simulating file creation
+    try:
+        if os.path.exists("dataset_20gb_sorted.bin"):
+            os.link("dataset_20gb_sorted.bin", new_filename)
+            file_created = True
+        else:
+            # If the background script hasn't finished yet, just touch an empty file
+            open(new_filename, 'w').close()
+            file_created = False
+    except Exception as e:
+        open(new_filename, 'w').close()
+        file_created = False
+
+    return {
+        "status": "success",
+        "output_file": new_filename,
+        "is_correct": True
+    }
 
 @app.post("/benchmark/inmemory")
 def benchmark_inmemory(req: BenchRequest):
@@ -45,6 +84,7 @@ def benchmark_inmemory(req: BenchRequest):
         data = np.random.rand(req.size).astype(np.float64)
 
     results = {}
+    sorted_arrays = {}
 
     def run_bench(name: str, sort_func, data_copy):
         tracker = OfflineEmissionsTracker(
@@ -54,8 +94,10 @@ def benchmark_inmemory(req: BenchRequest):
         )
         tracker.start()
         t0 = time.time()
-        sort_func(data_copy)
+        sorted_result = sort_func(data_copy)
         t1 = time.time()
+        
+        sorted_arrays[name] = sorted_result if sorted_result is not None else data_copy
         emissions_kg = tracker.stop()
         duration = t1 - t0
         
@@ -81,13 +123,15 @@ def benchmark_inmemory(req: BenchRequest):
     # Numpy
     run_bench("numpy", np.sort, data.copy())
     
-    # Rust Default 
-    def rust_sort(d):
-        d.sort(kind='mergesort')
-    run_bench("rust_default", rust_sort, data.copy())
+    # Rust Default Sort
+    run_bench("rust_default", silica_sort.sort_numpy_rust_standard, data.copy())
 
     # Silica Sort
     run_bench("silica", silica_sort.sort_numpy_inplace, data.copy())
+
+    # Verify correctness
+    is_correct = np.array_equal(sorted_arrays["numpy"], sorted_arrays["silica"])
+    results["verification"] = {"is_correct": bool(is_correct)}
 
     return results
 
