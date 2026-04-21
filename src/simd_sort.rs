@@ -4,28 +4,28 @@ use std::arch::x86_64::*;
 /// Uses AVX2 sorting networks for ≤16 elements, insertion sort for ≤32,
 /// and falls back to pdqsort for larger arrays.
 #[inline]
-pub fn simd_bucket_sort(data: &mut [f64]) {
+pub fn simd_bucket_sort(data: &mut [f64], has_avx2: bool) {
     let n = data.len();
     match n {
         0..=1 => {},
         2 => sort2(data),
         3 => sort3(data),
         4 => {
-            if is_x86_feature_detected!("avx2") {
+            if has_avx2 {
                 unsafe { avx2_sort_4(data) };
             } else {
                 sort_small(data);
             }
         },
         5..=8 => {
-            if is_x86_feature_detected!("avx2") {
+            if has_avx2 {
                 unsafe { avx2_sort_8_partial(data) };
             } else {
                 sort_small(data);
             }
         },
         9..=16 => {
-            if is_x86_feature_detected!("avx2") {
+            if has_avx2 {
                 unsafe { avx2_sort_16_partial(data) };
             } else {
                 sort_small(data);

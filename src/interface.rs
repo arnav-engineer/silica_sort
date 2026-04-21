@@ -10,11 +10,7 @@ use std::path::PathBuf;
 use crate::learned_sort;
 use crate::storage::{read_f64_chunk, write_f64_file};
 
-/// Wrapper to send raw pointer across thread boundary.
-/// Safety: caller guarantees exclusive access to the pointed-to data.
-struct SendPtr(*mut f64, usize);
-unsafe impl Send for SendPtr {}
-unsafe impl Sync for SendPtr {}
+
 
 /// Internal shared sort logic.
 pub fn sort_slice(data: &[f64]) -> Vec<f64> {
@@ -122,15 +118,23 @@ pub fn sort_file(_py: Python<'_>, input_path: String, output_path: String) -> Py
         });
 
         // 3. Writer Thread (Main thread handles writing to avoid spawning unnecessary threads)
-        let mut run_paths = Vec::new();
+        struct RunCleanup(Vec<PathBuf>);
+        impl Drop for RunCleanup {
+            fn drop(&mut self) {
+                for path in &self.0 {
+                    let _ = std::fs::remove_file(path);
+                }
+            }
+        }
+        let mut run_paths = RunCleanup(Vec::new());
         let mut write_err = None;
         while let Ok(sorted_chunk) = write_rx.recv() {
-            let run_path = format!("{}.run.{}", input_path, run_paths.len());
+            let run_path = format!("{}.run.{}", input_path, run_paths.0.len());
             if let Err(e) = write_f64_file(&run_path, &sorted_chunk) {
                 write_err = Some(e.to_string());
                 break;
             }
-            run_paths.push(PathBuf::from(run_path));
+            run_paths.0.push(PathBuf::from(run_path));
         }
 
         // Synchronize and check for errors in the pipeline
@@ -143,13 +147,8 @@ pub fn sort_file(_py: Python<'_>, input_path: String, output_path: String) -> Py
         reader_res?;
 
         // 4. K-Way Merge
-        let merge_res = crate::external_sort::k_way_merge(&run_paths, &output_path, n)
+        let merge_res = crate::external_sort::k_way_merge(&run_paths.0, &output_path, n)
             .map_err(|e| e.to_string());
-
-        // Cleanup temporary runs
-        for path in &run_paths {
-            let _ = std::fs::remove_file(path);
-        }
 
         merge_res
     });
@@ -221,12 +220,8 @@ fn recommended_single_run_limit(total_elements: usize) -> usize {
 }
 
 fn detect_available_memory_bytes() -> Option<u64> {
-    let meminfo = std::fs::read_to_string("/proc/meminfo").ok()?;
-    for line in meminfo.lines() {
-        if let Some(rest) = line.strip_prefix("MemAvailable:") {
-            let kb = rest.split_whitespace().next()?.parse::<u64>().ok()?;
-            return Some(kb * 1024);
-        }
-    }
-    None
+    use sysinfo::System;
+    let mut sys = System::new();
+    sys.refresh_memory();
+    Some(sys.available_memory())
 }

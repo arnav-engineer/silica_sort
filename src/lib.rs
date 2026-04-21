@@ -4,7 +4,6 @@ mod external_sort;
 mod hardware;
 mod interface;
 pub mod learned_sort;
-mod partition;
 mod radix_sort;
 mod rmi;
 mod sampler;

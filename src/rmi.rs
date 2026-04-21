@@ -9,43 +9,6 @@ impl LinearModel {
         Self { slope, intercept }
     }
 
-    /// Train a linear regression model (y = mx + c) using simple Least Squares.
-    /// Input: `data` is a list of (x, y) pairs.
-    pub fn train(data: &[(f64, f64)]) -> Self {
-        let n = data.len() as f64;
-        if n < 2.0 {
-            if !data.is_empty() {
-                return Self::new(0.0, data[0].1);
-            }
-            return Self::new(0.0, 0.0);
-        }
-
-        let mut sum_x = 0.0;
-        let mut sum_y = 0.0;
-        let mut sum_xy = 0.0;
-        let mut sum_xx = 0.0;
-
-        for &(x, y) in data {
-            sum_x += x;
-            sum_y += y;
-            sum_xy += x * y;
-            sum_xx += x * x;
-        }
-
-        let denominator = n * sum_xx - sum_x * sum_x;
-        if denominator.abs() < f64::EPSILON {
-            return Self::new(0.0, sum_y / n);
-        }
-
-        let mut slope = (n * sum_xy - sum_x * sum_y) / denominator;
-        if slope < 0.0 {
-            slope = 0.0;
-        }
-
-        let intercept = (sum_y - slope * sum_x) / n;
-        Self::new(slope, intercept)
-    }
-
     /// Optimized training for MonotonicRMI directly on sorted data.
     pub fn train_on_sorted(data: &[f64], num_buckets: usize) -> Self {
         let n = data.len();

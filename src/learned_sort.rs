@@ -30,6 +30,8 @@ pub fn learned_sort_f64(data: &mut [f64]) {
     }
 
     // === RMI Distribution Sort ===
+    let has_avx2 = std::arch::is_x86_feature_detected!("avx2");
+
     // 1. Train RMI on sample
     let sample = Sampler::extract_sample(data, SAMPLE_SIZE);
     let rmi = MonotonicRMI::train(&sample, NUM_BUCKETS);
@@ -60,7 +62,7 @@ pub fn learned_sort_f64(data: &mut [f64]) {
         // - ≤100K elements: pdqsort (exploits partial order, in-place, no alloc)
         // - >100K elements: radix sort (for badly-predicted overflow buckets)
         if len <= 64 {
-            crate::simd_sort::simd_bucket_sort(bucket);
+            crate::simd_sort::simd_bucket_sort(bucket, has_avx2);
         } else if len <= 100_000 {
             // pdqsort: optimal for RMI buckets because the data is already
             // roughly sorted. pdqsort detects runs and uses insertion sort
