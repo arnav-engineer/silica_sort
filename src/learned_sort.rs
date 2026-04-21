@@ -15,7 +15,7 @@ pub fn learned_sort_f64(data: &mut [f64]) {
     let n = data.len();
     if n <= 1 { return; }
     if n <= SMALL_SORT_THRESHOLD {
-        data.sort_unstable_by(f64::total_cmp);
+        crate::radix_sort::pdqsort_f64(data);
         return;
     }
 
@@ -65,7 +65,7 @@ pub fn learned_sort_f64(data: &mut [f64]) {
             // pdqsort: optimal for RMI buckets because the data is already
             // roughly sorted. pdqsort detects runs and uses insertion sort
             // for nearly-sorted regions. No scratch allocation needed.
-            bucket.sort_unstable_by(f64::total_cmp);
+            crate::radix_sort::pdqsort_f64(bucket);
         } else {
             // Overflow bucket: RMI prediction was poor for this region.
             // Fall back to radix sort with dest[] as scratch space.

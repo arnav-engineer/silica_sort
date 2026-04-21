@@ -32,7 +32,7 @@ pub fn simd_bucket_sort(data: &mut [f64]) {
             }
         },
         17..=64 => sort_small(data),
-        _ => data.sort_unstable_by(f64::total_cmp),
+        _ => crate::radix_sort::pdqsort_f64(data),
     }
 }
 

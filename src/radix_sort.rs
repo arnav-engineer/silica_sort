@@ -30,7 +30,7 @@ fn digit(value: u64, pass: usize) -> usize {
     ((value >> (pass * RADIX_BITS)) & RADIX_MASK) as usize
 }
 
-fn f64_as_u64_mut(data: &mut [f64]) -> &mut [u64] {
+pub fn f64_as_u64_mut(data: &mut [f64]) -> &mut [u64] {
     unsafe { std::slice::from_raw_parts_mut(data.as_mut_ptr() as *mut u64, data.len()) }
 }
 
@@ -41,7 +41,7 @@ pub fn sort_f64_in_place(data: &mut [f64]) {
     let n = data.len();
     if n <= 1 { return; }
     if n <= SMALL_THRESHOLD {
-        data.sort_unstable_by(f64::total_cmp);
+        pdqsort_f64(data);
         return;
     }
 
@@ -64,7 +64,7 @@ pub fn sort_f64_with_scratch(data: &mut [f64], scratch: &mut [f64]) {
     let n = data.len();
     if n <= 1 { return; }
     if n <= SMALL_THRESHOLD {
-        data.sort_unstable_by(f64::total_cmp);
+        pdqsort_f64(data);
         return;
     }
 
@@ -79,6 +79,17 @@ pub fn sort_f64_with_scratch(data: &mut [f64], scratch: &mut [f64]) {
         radix_sort_sequential(keys, temp);
     }
 
+    restore_keys(keys);
+}
+
+/// Fallback for `sort_unstable` that uses unsigned integer comparison for f64.
+/// `f64::total_cmp` is slow because it checks for NaN/sign.
+/// Using transformed u64 keys maps to simple CMP instructions.
+pub fn pdqsort_f64(data: &mut [f64]) {
+    if data.len() <= 1 { return; }
+    let keys = f64_as_u64_mut(data);
+    transform_keys(keys);
+    keys.sort_unstable();
     restore_keys(keys);
 }
 
@@ -282,7 +293,7 @@ fn prefix_sum(hist: &[u32; RADIX_SIZE], offsets: &mut [usize; RADIX_SIZE]) {
     }
 }
 
-fn transform_keys(keys: &mut [u64]) {
+pub fn transform_keys(keys: &mut [u64]) {
     if keys.len() >= PARALLEL_THRESHOLD {
         keys.par_iter_mut().for_each(|b| *b = f64_bits_to_key(*b));
     } else {
@@ -292,7 +303,7 @@ fn transform_keys(keys: &mut [u64]) {
     }
 }
 
-fn restore_keys(keys: &mut [u64]) {
+pub fn restore_keys(keys: &mut [u64]) {
     if keys.len() >= PARALLEL_THRESHOLD {
         keys.par_iter_mut().for_each(|b| *b = key_to_f64_bits(*b));
     } else {

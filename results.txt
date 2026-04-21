@@ -1,5 +1,3 @@
-Uninstalled 1 package in 0.53ms
-Installed 1 package in 10ms
 
 ================================================================================
   SILICA SORT BENCHMARK SUITE
@@ -11,25 +9,25 @@ Hardware Info: L1 Cache: 49152 B | L2 Cache: 1310720 B | SIMD: AVX2
 --------------------------------------------------------------------------------------------
 Distribution     | Algorithm          | Time (s)  | Throughput     | Status | Speedup
 --------------------------------------------------------------------------------------------
-uniform          | NumPy Quicksort    |   0.0002s |    459.1 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0006s |    120.2 MB/s | OK     | 0.26x
-                 | Silica Sort        |   0.0006s |    138.5 MB/s | OK     | 0.30x
+uniform          | NumPy Quicksort    |   0.0001s |    570.0 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0006s |    135.0 MB/s | OK     | 0.24x
+                 | Silica Sort        |   0.0006s |    120.1 MB/s | OK     | 0.21x
 --------------------------------------------------------------------------------------------
-normal           | NumPy Quicksort    |   0.0001s |    837.4 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0006s |    133.2 MB/s | OK     | 0.16x
-                 | Silica Sort        |   0.0001s |    588.8 MB/s | OK     | 0.70x
+normal           | NumPy Quicksort    |   0.0001s |   1051.3 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0005s |    150.8 MB/s | OK     | 0.14x
+                 | Silica Sort        |   0.0001s |    608.4 MB/s | OK     | 0.58x
 --------------------------------------------------------------------------------------------
-binary           | NumPy Quicksort    |   0.0000s |   3473.4 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0002s |    400.9 MB/s | OK     | 0.12x
-                 | Silica Sort        |   0.0046s |     16.5 MB/s | OK     | 0.00x
+binary           | NumPy Quicksort    |   0.0000s |   5873.3 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0001s |    512.4 MB/s | OK     | 0.09x
+                 | Silica Sort        |   0.0007s |    107.6 MB/s | OK     | 0.02x
 --------------------------------------------------------------------------------------------
-low_cardinality  | NumPy Quicksort    |   0.0001s |   1151.3 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0003s |    240.3 MB/s | OK     | 0.21x
-                 | Silica Sort        |   0.0002s |    311.6 MB/s | OK     | 0.27x
+low_cardinality  | NumPy Quicksort    |   0.0001s |   1371.9 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0003s |    255.0 MB/s | OK     | 0.19x
+                 | Silica Sort        |   0.0001s |    527.6 MB/s | OK     | 0.38x
 --------------------------------------------------------------------------------------------
-mostly_sorted    | NumPy Quicksort    |   0.0001s |    719.9 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0001s |    739.0 MB/s | OK     | 1.03x
-                 | Silica Sort        |   0.0001s |    848.3 MB/s | OK     | 1.18x
+mostly_sorted    | NumPy Quicksort    |   0.0001s |   1116.5 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0001s |    706.8 MB/s | OK     | 0.63x
+                 | Silica Sort        |   0.0001s |    823.1 MB/s | OK     | 0.74x
 --------------------------------------------------------------------------------------------
 
 
@@ -37,25 +35,25 @@ mostly_sorted    | NumPy Quicksort    |   0.0001s |    719.9 MB/s | OK     | 1.0
 --------------------------------------------------------------------------------------------
 Distribution     | Algorithm          | Time (s)  | Throughput     | Status | Speedup
 --------------------------------------------------------------------------------------------
-uniform          | NumPy Quicksort    |   0.0102s |    749.7 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0809s |     94.3 MB/s | OK     | 0.13x
-                 | Silica Sort        |   0.0048s |   1598.6 MB/s | OK     | 2.13x
+uniform          | NumPy Quicksort    |   0.0097s |    787.8 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0802s |     95.1 MB/s | OK     | 0.12x
+                 | Silica Sort        |   0.0042s |   1832.1 MB/s | OK     | 2.33x
 --------------------------------------------------------------------------------------------
-normal           | NumPy Quicksort    |   0.0095s |    799.3 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0812s |     93.9 MB/s | OK     | 0.12x
-                 | Silica Sort        |   0.0041s |   1872.3 MB/s | OK     | 2.34x
+normal           | NumPy Quicksort    |   0.0120s |    635.9 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0792s |     96.3 MB/s | OK     | 0.15x
+                 | Silica Sort        |   0.0035s |   2187.5 MB/s | OK     | 3.44x
 --------------------------------------------------------------------------------------------
-binary           | NumPy Quicksort    |   0.0026s |   2973.2 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0155s |    492.1 MB/s | OK     | 0.17x
-                 | Silica Sort        |   0.0012s |   6434.4 MB/s | OK     | 2.16x
+binary           | NumPy Quicksort    |   0.0027s |   2861.7 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0222s |    343.3 MB/s | OK     | 0.12x
+                 | Silica Sort        |   0.0011s |   6933.7 MB/s | OK     | 2.42x
 --------------------------------------------------------------------------------------------
-low_cardinality  | NumPy Quicksort    |   0.0035s |   2189.0 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0355s |    215.2 MB/s | OK     | 0.10x
-                 | Silica Sort        |   0.0021s |   3656.0 MB/s | OK     | 1.67x
+low_cardinality  | NumPy Quicksort    |   0.0031s |   2424.1 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0343s |    222.5 MB/s | OK     | 0.09x
+                 | Silica Sort        |   0.0020s |   3876.4 MB/s | OK     | 1.60x
 --------------------------------------------------------------------------------------------
-mostly_sorted    | NumPy Quicksort    |   0.0101s |    757.5 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.0207s |    368.3 MB/s | OK     | 0.49x
-                 | Silica Sort        |   0.0078s |    979.7 MB/s | OK     | 1.29x
+mostly_sorted    | NumPy Quicksort    |   0.0105s |    725.9 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.0181s |    422.1 MB/s | OK     | 0.58x
+                 | Silica Sort        |   0.0032s |   2351.6 MB/s | OK     | 3.24x
 --------------------------------------------------------------------------------------------
 
 
@@ -63,25 +61,25 @@ mostly_sorted    | NumPy Quicksort    |   0.0101s |    757.5 MB/s | OK     | 1.0
 --------------------------------------------------------------------------------------------
 Distribution     | Algorithm          | Time (s)  | Throughput     | Status | Speedup
 --------------------------------------------------------------------------------------------
-uniform          | NumPy Quicksort    |   0.4128s |    184.8 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   1.7924s |     42.6 MB/s | OK     | 0.23x
-                 | Silica Sort        |   0.1527s |    499.6 MB/s | OK     | 2.70x
+uniform          | NumPy Quicksort    |   0.1125s |    678.3 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.9552s |     79.9 MB/s | OK     | 0.12x
+                 | Silica Sort        |   0.0405s |   1881.6 MB/s | OK     | 2.77x
 --------------------------------------------------------------------------------------------
-normal           | NumPy Quicksort    |   0.4463s |    171.0 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   1.8572s |     41.1 MB/s | OK     | 0.24x
-                 | Silica Sort        |   0.2407s |    316.9 MB/s | OK     | 1.85x
+normal           | NumPy Quicksort    |   0.1103s |    691.6 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.9565s |     79.8 MB/s | OK     | 0.12x
+                 | Silica Sort        |   0.0455s |   1675.3 MB/s | OK     | 2.42x
 --------------------------------------------------------------------------------------------
-binary           | NumPy Quicksort    |   0.1260s |    605.4 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.5320s |    143.4 MB/s | OK     | 0.24x
-                 | Silica Sort        |   0.0375s |   2033.6 MB/s | OK     | 3.36x
+binary           | NumPy Quicksort    |   0.0269s |   2832.5 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.1865s |    409.1 MB/s | OK     | 0.14x
+                 | Silica Sort        |   0.0109s |   6973.3 MB/s | OK     | 2.46x
 --------------------------------------------------------------------------------------------
-low_cardinality  | NumPy Quicksort    |   0.1349s |    565.4 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.7235s |    105.5 MB/s | OK     | 0.19x
-                 | Silica Sort        |   0.0862s |    885.3 MB/s | OK     | 1.57x
+low_cardinality  | NumPy Quicksort    |   0.0440s |   1732.5 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.4036s |    189.0 MB/s | OK     | 0.11x
+                 | Silica Sort        |   0.0198s |   3855.5 MB/s | OK     | 2.23x
 --------------------------------------------------------------------------------------------
-mostly_sorted    | NumPy Quicksort    |   0.3077s |    248.0 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   0.4989s |    152.9 MB/s | OK     | 0.62x
-                 | Silica Sort        |   0.1731s |    440.6 MB/s | OK     | 1.78x
+mostly_sorted    | NumPy Quicksort    |   0.1200s |    635.9 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.2193s |    347.9 MB/s | OK     | 0.55x
+                 | Silica Sort        |   0.0299s |   2555.5 MB/s | OK     | 4.02x
 --------------------------------------------------------------------------------------------
 
 
@@ -89,29 +87,29 @@ mostly_sorted    | NumPy Quicksort    |   0.3077s |    248.0 MB/s | OK     | 1.0
 --------------------------------------------------------------------------------------------
 Distribution     | Algorithm          | Time (s)  | Throughput     | Status | Speedup
 --------------------------------------------------------------------------------------------
-uniform          | NumPy Quicksort    |   3.4235s |    111.4 MB/s | OK     | 1.00x
-                 | NumPy Stable       |  10.6007s |     36.0 MB/s | OK     | 0.32x
-                 | Silica Sort        |   0.7175s |    531.7 MB/s | OK     | 4.77x
+uniform          | NumPy Quicksort    |   0.6590s |    578.8 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   5.2726s |     72.3 MB/s | OK     | 0.12x
+                 | Silica Sort        |   0.2037s |   1872.7 MB/s | OK     | 3.24x
 --------------------------------------------------------------------------------------------
-normal           | NumPy Quicksort    |   2.6740s |    142.7 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   6.1080s |     62.5 MB/s | OK     | 0.44x
-                 | Silica Sort        |   0.3330s |   1145.6 MB/s | OK     | 8.03x
+normal           | NumPy Quicksort    |   0.6622s |    576.1 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   5.2860s |     72.2 MB/s | OK     | 0.13x
+                 | Silica Sort        |   0.2427s |   1572.0 MB/s | OK     | 2.73x
 --------------------------------------------------------------------------------------------
-binary           | NumPy Quicksort    |   0.1354s |   2818.2 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   1.0346s |    368.7 MB/s | OK     | 0.13x
-                 | Silica Sort        |   0.0552s |   6916.5 MB/s | OK     | 2.45x
+binary           | NumPy Quicksort    |   0.1178s |   3239.3 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   0.9686s |    393.8 MB/s | OK     | 0.12x
+                 | Silica Sort        |   0.0511s |   7467.8 MB/s | OK     | 2.31x
 --------------------------------------------------------------------------------------------
-low_cardinality  | NumPy Quicksort    |   0.2401s |   1588.7 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   2.1929s |    174.0 MB/s | OK     | 0.11x
-                 | Silica Sort        |   0.0938s |   4066.4 MB/s | OK     | 2.56x
+low_cardinality  | NumPy Quicksort    |   0.2191s |   1741.2 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   2.1513s |    177.3 MB/s | OK     | 0.10x
+                 | Silica Sort        |   0.0860s |   4437.3 MB/s | OK     | 2.55x
 --------------------------------------------------------------------------------------------
-mostly_sorted    | NumPy Quicksort    |   0.6757s |    564.6 MB/s | OK     | 1.00x
-                 | NumPy Stable       |   1.2667s |    301.2 MB/s | OK     | 0.53x
-                 | Silica Sort        |   0.1912s |   1995.0 MB/s | OK     | 3.53x
+mostly_sorted    | NumPy Quicksort    |   0.6525s |    584.6 MB/s | OK     | 1.00x
+                 | NumPy Stable       |   1.2515s |    304.8 MB/s | OK     | 0.52x
+                 | Silica Sort        |   0.1467s |   2600.1 MB/s | OK     | 4.45x
 --------------------------------------------------------------------------------------------
 
 
 >>> EXTERNAL FILE SORT BENCHMARK
 Generating 76.3 MB file...
 Sorting external file...
-External Sort Result: 0.1031s | 740.0 MB/s | OK
+External Sort Result: 0.0937s | 814.1 MB/s | OK

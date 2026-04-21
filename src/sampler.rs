@@ -6,7 +6,7 @@ impl Sampler {
     pub fn extract_sample(data: &[f64], sample_size: usize) -> Vec<f64> {
         if data.len() <= sample_size {
             let mut sample = data.to_vec();
-            sample.sort_unstable_by(f64::total_cmp);
+            crate::radix_sort::pdqsort_f64(&mut sample);
             return sample;
         }
 
@@ -17,7 +17,7 @@ impl Sampler {
             sample.push(data[i * step]);
         }
 
-        sample.sort_unstable_by(f64::total_cmp);
+        crate::radix_sort::pdqsort_f64(&mut sample);
         sample
     }
 }
