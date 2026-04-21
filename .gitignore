@@ -28,3 +28,4 @@ benchmark_results/
 
 # OS/editor noise
 .DS_Store
+*.bin
