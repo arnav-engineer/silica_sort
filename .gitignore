@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+build/
+dist/
+wheels/
+*.egg-info/
+
+# Virtual environments
+.venv/
+
+# Rust
+target/
+.cargo/
+
+# Tooling
+.maturin/
+
+# Generated benchmark and demo artifacts
+*.bin
+*.run.*
+benchmark_results/
+
+# OS/editor noise
+.DS_Store
