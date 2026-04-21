@@ -4,28 +4,56 @@
 
 Silica Sort is a hybrid, production-grade sorting framework built in Rust with Python bindings. It leverages hardware-specific optimizations (SIMD) and learned index structures (Recursive Model Indexes) to significantly outperform standard sorting algorithms like `pdqsort` and mergesort, particularly for large numeric arrays.
 
-## Key Features
+## 🚀 Performance Dashboard
 
-- **Learned Indexing (RMI)**: Uses a fast linear regression model trained on a data sample to predict the approximate position of elements, enabling `O(N)` expected time complexity by scattering elements into buckets in a single pass.
-- **SIMD Acceleration**: Fallback sorting for small buckets (≤ 64 elements) uses AVX2 sorting networks for maximum throughput.
-- **Out-of-Core External Sort**: Automatically handles files larger than available RAM using an optimized chunked pipeline with a multi-threaded reader-sorter-writer architecture and K-Way merge.
-- **Adaptive Execution**: Dynamically switches to counting sort for low-cardinality data, and bypasses partitioning entirely for already sorted or reverse-sorted data.
-- **Zero-Copy In-Place Sorting**: Native Python bindings allow sorting NumPy arrays directly in memory without the GIL.
+The project includes a posh, luxury-themed dashboard inspired by Apple's UI philosophy to benchmark and visualize Silica Sort's performance.
 
-## Architecture Highlights
+### Features
+- **In-Memory Analysis**: Compare Silica Sort against NumPy and Rust Standard Library across various distributions (Normal, Uniform, Binary, Mostly Sorted).
+- **Interactive Visualizers**: Real-time canvas-based visualizations of partitioning and merging behaviors.
+- **Out-of-Core Simulation**: A dedicated pipeline for massive datasets (e.g., 20 GB) that simulates real-world failures of standard libraries (OOM crashes) and highlights Silica's robust execution.
+- **Accuracy Verification**: Bit-for-bit integrity checks against baseline standards for every run.
+- **Indian Numbering Support**: All metrics are localized (Lakhs/Crores) for clear communication.
 
-1. **Phase 1: Sampling & Training**: A small subset of the data is sampled to train a Monotonic RMI model.
-2. **Phase 2: Parallel Partitioning**: Elements are scattered into 2,048 buckets using the RMI's predictions. Write-combining buffers ensure cache-friendly memory access patterns.
-3. **Phase 3: Bucket Sort**: Each bucket is sorted in parallel. Depending on the bucket size and data distribution, the algorithm delegates to:
-   - **AVX2 Sorting Networks** (for tiny arrays ≤ 16 elements).
-   - **Optimized Insertion Sort** (for small arrays ≤ 64 elements).
-   - **pdqsort** (Pattern-Defeating Quicksort) for mid-sized buckets.
-   - **Radix Sort** for large outlier buckets where the RMI prediction was inaccurate.
+### Running the Dashboard
+Ensure you have `uv` and `npm` installed, then run:
+```bash
+./run_dashboard.sh
+```
+This will launch the FastAPI backend (Port 8000) and the Vite frontend simultaneously.
 
-## Performance
+---
 
-Silica Sort regularly achieves **2x to 4x speedups** over NumPy's highly optimized `np.sort` (quicksort) and standard `pdqsort` implementations, especially on uniform, normally distributed, and mostly-sorted datasets.
+## 🛠 Technical Highlights
 
-## Cross-Platform
+- **Learned Indexing (RMI)**: Uses a fast linear regression model trained on a data sample to predict the approximate position of elements, enabling `O(N)` expected time complexity.
+- **SIMD Acceleration**: Fallback sorting for small buckets uses AVX2 sorting networks for maximum throughput.
+- **External Sort Pipeline**: Automatically handles files larger than available RAM using an optimized chunked architecture with K-Way merge.
+- **Zero-Copy In-Place Sorting**: Native Python bindings (PyO3) allow sorting NumPy arrays directly in memory without GIL overhead.
 
-Dynamically detects hardware limits and scales. Memory limits and cache sizes are parsed dynamically using the `sysinfo` and `raw-cpuid` crates, ensuring optimal chunk sizing for out-of-core operations across Linux, macOS, and Windows.
+---
+
+## 📂 Out-of-Core Setup
+To test the "Out of Memory" capabilities with real data files (40 GB total disk space required):
+1. Run the generation script:
+   ```bash
+   uv run python generate_20gb_files.py
+   ```
+2. The dashboard will automatically detect these files and enable the full simulation pipeline.
+
+## 🏗 Installation
+
+### Requirements
+- Rust (Cargo)
+- Python 3.9+
+- `uv` (recommended)
+- Node.js & npm
+
+### Build from Source
+```bash
+# Build the python extension
+uv pip install -e .
+```
+
+## ⚖️ License
+Licensed under the Apache License, Version 2.0.
